@@ -1,1 +1,9 @@
-
+# mysql 5 配置   mysql 8需要时区配置
+spring:
+  datasource:
+    username: root
+    password: 789456
+    url: jdbc:mysql://localhost:3306/news_app?useSSL=false&unicode=true&characterEncoding=utf-8&serverTimezone=UTC
+    driver-class-name: com.mysql.cj.jdbc.Driver
+server:
+  port: 8081
