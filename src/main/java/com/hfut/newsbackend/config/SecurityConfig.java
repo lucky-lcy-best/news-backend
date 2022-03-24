@@ -52,6 +52,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
                 .antMatchers("/user/login").permitAll()
                 //注册接口
                 .antMatchers("/user/register").permitAll()
+                .antMatchers("/upload").permitAll()
                 .antMatchers("/user/isRegister/{account}").permitAll()
                 //用户在登陆之前可以查看的新闻 都是没有经过推荐系统推荐的
                 .antMatchers("/getRecNews/{id}/{refresh_count}/{pageSize}").permitAll()
