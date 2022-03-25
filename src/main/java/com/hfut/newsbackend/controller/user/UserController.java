@@ -5,6 +5,7 @@ import com.hfut.newsbackend.pojo.show.UserInfo;
 import com.hfut.newsbackend.response.ResponseResult;
 import com.hfut.newsbackend.service.impl.LoginServiceImpl;
 import io.swagger.annotations.ApiOperation;
+import javafx.geometry.Pos;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
@@ -34,6 +35,15 @@ public class UserController {
     @ApiOperation("用户登录接口")
     public ResponseResult login(@RequestBody User user){
         return loginServiceImpl.login(user);
+    }
+
+    /**
+     * TODO app用来无缝衔接刷新token的接口
+     */
+        @GetMapping("/user/refreshToken/{id}")
+    @ApiOperation("刷新token")
+    public ResponseResult refreshToken(@PathVariable String id) {
+        return loginServiceImpl.refreshToken(id) ;
     }
 
     /**
@@ -71,5 +81,14 @@ public class UserController {
     @ApiOperation("是否账号已注册")
     public ResponseResult isRegister(@PathVariable String account) {
         return loginServiceImpl.isRegister(account) ;
+    }
+
+    /**
+     * TODO 用户编辑资料更新信息接口
+     */
+    @PostMapping("/user/update")
+    @ApiOperation("更新用户信息")
+    public ResponseResult updateUserInfo(@RequestBody User user) {
+        return loginServiceImpl.updateUserInfo(user) ;
     }
 }

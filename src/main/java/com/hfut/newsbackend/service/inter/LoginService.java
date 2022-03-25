@@ -14,4 +14,8 @@ public interface LoginService {
     ResponseResult register(User user);
 
     ResponseResult isRegister(String account);
+
+    ResponseResult updateUserInfo(User user);
+
+    ResponseResult refreshToken(String id);
 }

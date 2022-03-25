@@ -2,6 +2,7 @@ package com.hfut.newsbackend.controller;
 
 import com.hfut.newsbackend.response.ResponseResult;
 import com.hfut.newsbackend.service.impl.OssServiceImpl;
+import io.swagger.annotations.ApiOperation;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -22,8 +23,9 @@ public class OssController {
     private OssServiceImpl ossService ;
 
     @PostMapping("/upload")
-    public ResponseResult upload(@RequestBody MultipartFile file) {
-        return new ResponseResult(200 , "上传成功" , ossService.publishImgToOSS(file)) ;
+    @ApiOperation("用户上传图片的接口，上传后的图片存入阿里云的oss存储")
+    public String upload(@RequestBody MultipartFile file) {
+        return ossService.publishImgToOSS(file) ;
     }
 
 }

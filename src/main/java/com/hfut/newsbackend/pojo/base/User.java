@@ -70,4 +70,10 @@ public class User implements Serializable {
     //逻辑删除(0代表未删除，1代表已删除)
     private Integer delFlag ;
 
+    //地区
+    private String area ;
+
+    //生日
+    private Date birthday ;
+
 }

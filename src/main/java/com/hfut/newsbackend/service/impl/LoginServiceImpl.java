@@ -1,5 +1,6 @@
 package com.hfut.newsbackend.service.impl;
 
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.hfut.newsbackend.mapper.UserMapper;
 import com.hfut.newsbackend.pojo.base.User;
@@ -16,8 +17,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
-import java.util.HashMap;
-import java.util.Objects;
+import java.util.*;
 
 /**
  * @author Lucky
@@ -60,7 +60,43 @@ public class LoginServiceImpl implements LoginService {
         HashMap<String,String> map = new HashMap<>();
         map.put("token",jwt);
 
-        return new ResponseResult(200,"登陆成功",map);
+        return new ResponseResult(200,"登录成功",map);
+    }
+
+    /**
+     * 刷新token
+     * @return
+     */
+    @Override
+    public ResponseResult refreshToken(String userId) {
+        //使用userid生成token
+        String jwt = JwtUtil.createJWT(userId);
+
+        // 用户信息存入redis 键值对 先查找用户信息
+        QueryWrapper<User> wrapper = new QueryWrapper<>() ;
+        wrapper.eq("id" , userId) ;
+        User user = userMapper.selectOne(wrapper) ;
+        //如果查询不到数据就通过抛出异常来给出提示
+        if(Objects.isNull(user)){
+            throw new RuntimeException("用户id错误");
+        }
+        // 根据用户查询权限信息 添加到LoginUser中
+        List<String> authorities = new ArrayList<>() ;
+        //一共三种用户，分别赋予不同的权限
+        switch (user.getUserType()) {
+            case 2 : authorities = Arrays.asList("admin" , "common") ; break;
+            case 1 : authorities = Arrays.asList("news", "common") ; break;
+            case 0 : authorities = Arrays.asList("common") ; break;
+        }
+        LoginUser loginUser = new LoginUser(user, authorities) ;
+        //将用户信息存入redis
+        redisCache.setCacheObject("login:"+userId,loginUser);
+
+        //把 token反馈给前端
+        HashMap<String,Object> map = new HashMap<>();
+        map.put("token",jwt);
+
+        return new ResponseResult(200,"刷新token成功",map);
     }
 
     /**
@@ -141,4 +177,28 @@ public class LoginServiceImpl implements LoginService {
         return new ResponseResult(200,"该账号已注册",true);
 
     }
+
+    /**
+     * 更新用户信息
+     * @param user
+     * @return
+     */
+    @Override
+    public ResponseResult updateUserInfo(User user) {
+        //执行更新操作
+        //获取SecurityContextHolder用户id
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        LoginUser loginUser = (LoginUser) authentication.getPrincipal();
+        Long userid = loginUser.getUser().getId();
+        user.setId(userid);
+
+        int lines = userMapper.updateById(user) ;
+
+        if (lines == 0) {
+            //更新失败，用户信息未改变
+            return new ResponseResult(200 , "用户信息尚未更改" , false) ;
+        }
+        return new ResponseResult(200 , "用户信息修改成功" , true) ;
+    }
+
 }
