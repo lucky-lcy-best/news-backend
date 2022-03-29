@@ -2,10 +2,13 @@ package com.hfut.newsbackend.pojo.base;
 
 import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableId;
+import com.baomidou.mybatisplus.annotation.TableLogic;
 import com.baomidou.mybatisplus.annotation.TableName;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+
+import java.util.Date;
 
 /**
  * 一些实体类
@@ -53,4 +56,13 @@ public class News {
     //原文章url
     private String srcUrl ;
 
+    //创建时间
+    private Date createTime;
+
+    //更新时间
+    private Date updateTime;
+
+    //逻辑删除
+    @TableLogic
+    private boolean del_flag ;
 }

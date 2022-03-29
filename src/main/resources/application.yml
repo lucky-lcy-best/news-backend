@@ -5,5 +5,10 @@ spring:
     password: 789456
     url: jdbc:mysql://localhost:3306/news_app?useSSL=false&unicode=true&characterEncoding=utf-8&serverTimezone=UTC
     driver-class-name: com.mysql.cj.jdbc.Driver
+
+mybatis-plus:
+  global-config:
+    db-config:
+      id-type: auto
 server:
   port: 8081

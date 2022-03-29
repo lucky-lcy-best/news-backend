@@ -52,6 +52,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
                 .antMatchers("/user/login").permitAll()
                 .antMatchers("/upload").permitAll()
                 .antMatchers("/user/refreshToken/{id}").permitAll()
+                .antMatchers("/news/{id}").permitAll()
                 //注册接口
                 .antMatchers("/user/register").permitAll()
                 .antMatchers("/user/isRegister/{account}").permitAll()

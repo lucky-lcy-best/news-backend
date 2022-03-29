@@ -17,8 +17,7 @@ public class test {
     public void testUserMapper(){
         LambdaQueryWrapper<User> wrapper = new LambdaQueryWrapper<>();
         wrapper.eq(User::getAccount,"18856357393");
-        User user = userMapper.selectOne(wrapper);
-        System.out.println(user);
+        userMapper.delete(wrapper);
     }
 
     @Test

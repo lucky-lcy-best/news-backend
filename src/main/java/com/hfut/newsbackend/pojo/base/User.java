@@ -2,6 +2,7 @@ package com.hfut.newsbackend.pojo.base;
 
 import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableId;
+import com.baomidou.mybatisplus.annotation.TableLogic;
 import com.baomidou.mybatisplus.annotation.TableName;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.AllArgsConstructor;
@@ -68,7 +69,8 @@ public class User implements Serializable {
     private Date updateTime;
 
     //逻辑删除(0代表未删除，1代表已删除)
-    private Integer delFlag ;
+    @TableLogic
+    private boolean delFlag ;
 
     //地区
     private String area ;
