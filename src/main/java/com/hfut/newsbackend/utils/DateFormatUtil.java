@@ -50,6 +50,11 @@ public class DateFormatUtil {
         String secondsTime = String.valueOf(time / 1000);
         return secondsTime;
     }
+
+    /**
+     * 2022-04-02T20:30:59.000+00:00  此类时间格式转换
+     */
+//    public static String
 }
 
 

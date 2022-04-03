@@ -47,6 +47,13 @@ public class NewsServiceImpl implements NewsService {
     @Autowired
     private RedisCache redisCache ;
 
+    /**
+     * 返回多条新闻
+     * @param id
+     * @param refresh_count
+     * @param pageSize
+     * @return
+     */
     //分页查询  一次pageSize条新闻
     public List<NewsInfo> getRecNews(Integer id, Integer refresh_count, Integer pageSize) {
         String identity = new String() ;
@@ -110,6 +117,10 @@ public class NewsServiceImpl implements NewsService {
         QueryWrapper<NewsInfo> wrapper = new QueryWrapper<>() ;
         wrapper.eq("news_info.id" , id) ;
         NewsInfo one = newsInfoMapper.getById(wrapper) ;
+        //将新闻的时间由时间戳转换成datatime
+        one.setPublishTime(DateFormatUtil.timeStamp2Date(one.getPublishTime()));
+        //将视频加载中这类新闻的视频加载时删除
+        one.setContent(one.getContent().replace("视频加载中...",""));
         //得到redis中的点赞数
 //        Collection<String> keys = redisCache.keys("*::*") ;
 //        for (String key : keys) {
