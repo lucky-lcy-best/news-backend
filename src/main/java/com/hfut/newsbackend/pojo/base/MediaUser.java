@@ -35,6 +35,8 @@ public class MediaUser {
     private Long followerCount ;
 
     //媒体的描述
-    @TableField(value = "desc")
-    private String desc ;
+    @TableField(value = "description")
+    private String description ;
+
+    private String avatorUrl ;
 }

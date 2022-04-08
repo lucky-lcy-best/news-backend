@@ -1,9 +1,6 @@
 package com.hfut.newsbackend.pojo.base;
 
-import com.baomidou.mybatisplus.annotation.IdType;
-import com.baomidou.mybatisplus.annotation.TableId;
-import com.baomidou.mybatisplus.annotation.TableLogic;
-import com.baomidou.mybatisplus.annotation.TableName;
+import com.baomidou.mybatisplus.annotation.*;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -44,9 +41,11 @@ public class Comment {
     //
     private Date createTime ;
 
+    @TableField(update = "now()")
     private Date updateTime ;
 
     //逻辑删除
     @TableLogic
     private Boolean delFlag = false ;
+
 }

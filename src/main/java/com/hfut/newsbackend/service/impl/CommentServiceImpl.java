@@ -189,10 +189,10 @@ public class CommentServiceImpl implements CommentService {
         if (!Objects.isNull(commentDiggMapper.selectOne(wrapper3))) {
             info.setIsDigg(commentDiggMapper.selectOne(wrapper3).getIsDigg()) ;
         }
-        //查询回复条数   前提是回复该评论的回复，不是回复某个回复的回复
+        //查询回复条数
         QueryWrapper<Reply> wrapper2 = new QueryWrapper<>() ;
         wrapper2.eq("comment_id",comment.getId()) ;
-        wrapper2.eq("type",0) ;
+//        wrapper2.eq("type",0) ;
         wrapper2.orderByDesc("create_time") ;
         List<Reply> replyList = replyMapper.selectList(wrapper2);
         info.setAllReply((long) replyList.size());

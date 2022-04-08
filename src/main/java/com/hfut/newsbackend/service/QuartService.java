@@ -3,8 +3,10 @@ package com.hfut.newsbackend.service;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.hfut.newsbackend.mapper.NewsMapper;
 import com.hfut.newsbackend.mapper.UserDiggMapper;
+import com.hfut.newsbackend.mapper.UserHistoryMapper;
 import com.hfut.newsbackend.mapper.UserLikeMapper;
 import com.hfut.newsbackend.pojo.base.News;
+import com.hfut.newsbackend.pojo.base.UserHistory;
 import com.hfut.newsbackend.pojo.show.UserDigg;
 import com.hfut.newsbackend.pojo.show.UserLike;
 import com.hfut.newsbackend.response.ResponseResult;
@@ -13,7 +15,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
+import java.sql.Timestamp;
+import java.text.SimpleDateFormat;
 import java.util.Collection;
+import java.util.Date;
 import java.util.Objects;
 
 /**
@@ -35,6 +40,9 @@ public class QuartService {
 
     @Autowired
     private NewsMapper newsMapper ;
+
+    @Autowired
+    private UserHistoryMapper userHistoryMapper ;
 
     //每 5 分钟写回一次点赞数和信息回数据库  防止数据库压力过大
     @Scheduled(cron = "0/5 * * * * ?")
@@ -109,6 +117,35 @@ public class QuartService {
             if (isLike) newsMapper.likeCountPlus(news , updateWrapper);
             else newsMapper.likeCountMinus(news , updateWrapper);
             //更新完之后删除redis中的数据
+            redisCache.deleteObject(key);
+        }
+
+    }
+
+    //每 5 分钟写回一次历史记录和信息回数据库  防止数据库压力过大
+    @Scheduled(cron = "0/5 * * * * ?")
+    public void history2DB() {
+        //获取所有的键值对
+        Collection<String> keys = redisCache.keys("*..") ;
+        //遍历每一个收藏信息并持久化到数据库
+        for (String key : keys) {
+            //获取userId
+            String userId = key.substring(0,key.length()-2) ;
+            Long newsId = redisCache.getCacheObject(key) ;
+            UserHistory userHistory = new UserHistory() ;
+            userHistory.setUserId(Long.parseLong(userId));
+            userHistory.setNewsId(newsId);
+
+            QueryWrapper<UserHistory> wrapper = new QueryWrapper<>() ;
+            wrapper.eq("user_id" ,userId) ;
+            wrapper.eq("news_id" , newsId) ;
+            UserHistory one = userHistoryMapper.selectOne(wrapper) ;
+            if (Objects.isNull(one)) userHistoryMapper.insert(userHistory) ;
+            else {
+                //更新一下浏览次数 + 1
+                one.setReadCount(one.getReadCount() + 1);
+                userHistoryMapper.updateById(one) ;
+            }
             redisCache.deleteObject(key);
         }
 

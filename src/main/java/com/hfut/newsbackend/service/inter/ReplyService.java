@@ -12,4 +12,14 @@ public interface ReplyService {
     ResponseResult clickDigg(ReplyDigg replyDigg);
 
     ResponseResult deleteById(Long replyId);
+
+    ResponseResult getNewReplies(Long userId);
+
+    ResponseResult getNewRepliesComment(Long userId);
+
+    ResponseResult setReplyRead(Long replyId);
+
+    ResponseResult getDiggs(Long userId);
+
+    ResponseResult setDiggRead(Long diggId, Short type);
 }

@@ -78,4 +78,44 @@ public class NewsController {
     public ResponseResult isUserLiked(@PathVariable Long userId ,@PathVariable Long newsId) {
         return newsService.isUserLiked(userId , newsId);
     }
+
+    /**
+     * TODO 获取新闻作者信息
+     */
+    @GetMapping("/news/getAuthorById/{uid}")
+    public ResponseResult getAuthorById(@PathVariable String uid) {
+        return newsService.getAuthById(uid) ;
+    }
+
+    /**
+     * TODO 根据作者id获取该作者发布的新闻
+     */
+    @GetMapping("/news/getNewsByAuthUid/{uid}")
+    public ResponseResult getNewsByAuthUid(@PathVariable String uid) {
+        return newsService.getNewsByAuthUid(uid) ;
+    }
+
+    /**
+     * TODO 是否已关注该作者
+     */
+    @GetMapping("/news/isFollow/{userId}/{mediaUid}")
+    public ResponseResult userIsFollow(@PathVariable Long userId , @PathVariable String mediaUid ) {
+        return newsService.userIsFollow(userId , mediaUid) ;
+    }
+
+    /**
+     * TODO 关注用户
+     */
+    @GetMapping("/news/followMedia/{userId}/{mediaUid}")
+    public ResponseResult followMedia(@PathVariable Long userId , @PathVariable String mediaUid ) {
+        return newsService.followMedia(userId , mediaUid) ;
+    }
+
+    /**
+     * TODO 取关用户
+     */
+    @GetMapping("/news/cancelFollowMedia/{userId}/{mediaUid}")
+    public ResponseResult cancelFollowMedia(@PathVariable Long userId , @PathVariable String mediaUid ) {
+        return newsService.cancelFollowMedia(userId , mediaUid) ;
+    }
 }

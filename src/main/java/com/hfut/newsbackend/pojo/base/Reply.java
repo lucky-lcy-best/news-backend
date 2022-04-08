@@ -1,5 +1,6 @@
 package com.hfut.newsbackend.pojo.base;
 
+import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableLogic;
 import com.baomidou.mybatisplus.annotation.TableName;
 import com.fasterxml.jackson.annotation.JsonFormat;
@@ -30,7 +31,7 @@ public class Reply {
 
     private Long toUid ;
 
-    private short type ;
+    private Short type ;
 
     private Long diggCount ;
 
@@ -38,8 +39,12 @@ public class Reply {
 
     private Date createTime ;
 
+    @TableField(update = "now()")
     private Date updateTime ;
 
     @TableLogic
     private Boolean delFlag = false ;
+
+    //被回复者是否已经查看过该通知
+    private Boolean isRead = false ;
 }

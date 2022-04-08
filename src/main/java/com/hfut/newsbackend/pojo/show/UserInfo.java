@@ -1,6 +1,7 @@
 package com.hfut.newsbackend.pojo.show;
 
 import com.baomidou.mybatisplus.annotation.IdType;
+import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
 import lombok.AllArgsConstructor;
@@ -60,6 +61,7 @@ public class UserInfo {
     private Date createTime;
 
     //更新时间
+    @TableField(update = "now()")
     private Date updateTime;
 
     //逻辑删除(0代表未删除，1代表已删除)

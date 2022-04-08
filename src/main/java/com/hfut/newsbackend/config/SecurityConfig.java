@@ -58,6 +58,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
                 .antMatchers("/user/isRegister/{account}").permitAll()
                 //用户在登陆之前可以查看的新闻 都是没有经过推荐系统推荐的
                 .antMatchers("/getRecNews/{id}/{refresh_count}/{pageSize}").permitAll()
+                .antMatchers("/epidemic/world").permitAll()
                 // 除上面外的所有请求全部需要鉴权认证
                 .anyRequest().authenticated();
         //把token校验过滤器添加到过滤器链中

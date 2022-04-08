@@ -3,7 +3,7 @@ package com.hfut.newsbackend.service.impl;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.hfut.newsbackend.mapper.*;
-import com.hfut.newsbackend.pojo.base.News;
+import com.hfut.newsbackend.pojo.base.*;
 import com.hfut.newsbackend.pojo.show.LoginUser;
 import com.hfut.newsbackend.pojo.show.NewsInfo;
 import com.hfut.newsbackend.pojo.show.UserDigg;
@@ -12,15 +12,13 @@ import com.hfut.newsbackend.response.ResponseResult;
 import com.hfut.newsbackend.service.inter.NewsService;
 import com.hfut.newsbackend.utils.DateFormatUtil;
 import com.hfut.newsbackend.utils.RedisCache;
+import lombok.extern.log4j.Log4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
 
 /**
  * @author Lucky
@@ -46,6 +44,12 @@ public class NewsServiceImpl implements NewsService {
 
     @Autowired
     private RedisCache redisCache ;
+
+    @Autowired
+    private UserHistoryMapper userHistoryMapper ;
+
+    @Autowired
+    private UserFollowMapper userFollowMapper ;
 
     /**
      * 返回多条新闻
@@ -236,6 +240,162 @@ public class NewsServiceImpl implements NewsService {
         }
         //查到说明点赞了
         return new ResponseResult(200 , "已收藏",true) ;
+    }
+
+    /**
+     * TODO 插入浏览历史记录
+     * 和点赞收藏一样，先加入redis中，每隔半个小时再写入数据库中，因为对于新闻的操作，、
+     * 一般都会给数据库造成较大压力
+     * @param userHistory
+     * @return
+     */
+    @Override
+    public ResponseResult addHistory(UserHistory userHistory) {
+        //和点赞收藏一样，先加入redis中，每隔半个小时再写入数据库中
+        //格式 userId..  :  newsId即可
+        String key = Long.toString(userHistory.getUserId()) + ".." ;
+        redisCache.setCacheObject(key, userHistory.getNewsId());
+
+        return new ResponseResult(200 , "插入历史记录成功" , true) ;
+    }
+
+    /**
+     * TODO 获取用户历史记录分页
+     * @param userId
+     * @param pageNo
+     * @return
+     */
+    @Override
+    public ResponseResult getAllHistory(Long userId, Long pageNo) {
+        //先查历史记录表
+        QueryWrapper<UserHistory> wrapper = new QueryWrapper<>() ;
+        wrapper.eq("user_id" , userId) ;
+        wrapper.orderByDesc("update_time") ;
+
+        Page<UserHistory> page = new Page<>(pageNo , 10) ;
+        Page<UserHistory> hisPage = userHistoryMapper.selectPage(page, wrapper);
+        List<UserHistory> histories = hisPage.getRecords() ;
+        Long num = hisPage.getPages() ;
+        //遍历每一条新闻，根据id查询
+        List<NewsInfo> newsInfos = new ArrayList<>() ;
+        for (UserHistory his : histories) {
+            newsInfos.add((NewsInfo) getNewsById(his.getNewsId()).getData());
+        }
+        HashMap<String , Object> map = new HashMap<>() ;
+        map.put("histories" , newsInfos) ;
+        map.put("pageNum" , num) ;
+        return new ResponseResult(200 , "获取浏览记录成功" , map);
+    }
+
+    /**
+     * TODO 获取用户收藏
+     * @param userId
+     * @param pageNo
+     * @return
+     */
+    @Override
+    public ResponseResult getAllLike(Long userId, Long pageNo) {
+        //先查用户收藏表
+        QueryWrapper<UserLike> wrapper = new QueryWrapper<>() ;
+        wrapper.eq("user_id" , userId) ;
+        wrapper.orderByDesc("update_time") ;
+
+        Page<UserLike> page = new Page<>(pageNo , 10) ;
+        Page<UserLike> likePage = userLikeMapper.selectPage(page, wrapper);
+        List<UserLike> likes = likePage.getRecords() ;
+        Long num = likePage.getPages() ;
+        //遍历每一条新闻，根据id查询
+        List<NewsInfo> newsInfos = new ArrayList<>() ;
+        for (UserLike like : likes) {
+            newsInfos.add((NewsInfo) getNewsById(like.getNewsId()).getData());
+        }
+        HashMap<String , Object> map = new HashMap<>() ;
+        map.put("likes" , newsInfos) ;
+        map.put("pageNum" , num) ;
+        return new ResponseResult(200 , "获取浏览记录成功" , map);
+    }
+
+    /**
+     * 获取作者信息
+     * @param uid
+     * @return
+     */
+    @Override
+    public ResponseResult getAuthById(String uid) {
+        QueryWrapper<MediaUser> wrapper = new QueryWrapper<>() ;
+        wrapper.eq("creator_uid" , uid) ;
+        List<MediaUser> users = mediaUserMapper.selectList(wrapper);
+        return new ResponseResult(200,"获取作者信息成功",users.get(0));
+    }
+
+    /**
+     * 获取作者发布的新闻
+     * @param uid
+     * @return
+     */
+    @Override
+    public ResponseResult getNewsByAuthUid(String uid) {
+        QueryWrapper<News> wrapper = new QueryWrapper<>() ;
+        wrapper.eq("creator_uid" , uid) ;
+        wrapper.orderByDesc("publish_time");
+        List<News> news = newsMapper.selectList(wrapper);
+
+        return new ResponseResult(200 , "获取当前作者新闻成功", news );
+    }
+
+    /**
+     * 是否专注该作者
+     * @param userId
+     * @param mediaUid
+     * @return
+     */
+    @Override
+    public ResponseResult userIsFollow(Long userId, String mediaUid) {
+        QueryWrapper<UserFollow> wrapper = new QueryWrapper<>() ;
+        wrapper.eq("user_id" , userId) ;
+        wrapper.eq("media_uid" , mediaUid) ;
+
+        if (!Objects.isNull(userFollowMapper.selectOne(wrapper))) {
+            return new ResponseResult(200 , "已关注" , true) ;
+        }
+        return new ResponseResult(200 , "未关注" , false) ;
+    }
+
+    /**
+     * TODO 关注用户
+     * @param userId
+     * @param mediaUid
+     * @return
+     */
+    @Override
+    public ResponseResult followMedia(Long userId, String mediaUid) {
+        //关注用户就是插入一条数据
+        UserFollow userFollow = new UserFollow() ;
+        userFollow.setUserId(userId);
+        userFollow.setMediaUid(mediaUid);
+        if (userFollowMapper.insert(userFollow) != 0) {
+            return new ResponseResult(200 , "关注成功" , true) ;
+        }
+        return new ResponseResult(200 , "关注失败" , false) ;
+    }
+
+    /**
+     * 取关用户
+     * @param userId
+     * @param mediaUid
+     * @return
+     */
+    @Override
+    public ResponseResult cancelFollowMedia(Long userId, String mediaUid) {
+        //取消关注就是删除数据
+        QueryWrapper<UserFollow> wrapper = new QueryWrapper<>() ;
+        wrapper.eq("user_id" , userId) ;
+        wrapper.eq("media_uid" , mediaUid) ;
+
+        if (userFollowMapper.delete(wrapper) != 0) {
+            return new ResponseResult(200 , "取关成功" , true) ;
+        }
+        return new ResponseResult(200 , "取关失败" , false) ;
     }
 
     /**

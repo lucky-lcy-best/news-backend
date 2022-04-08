@@ -26,4 +26,5 @@ public interface NewsInfoMapper extends BaseMapper<NewsInfo> {
     @Select("SELECT DISTINCT news_info.*, media_user.author,media_user.avator_url\n" +
             "FROM news_info JOIN `media_user` ON news_info.creator_uid = media_user.creator_uid ${ew.customSqlSegment}")
     NewsInfo getById(@Param("ew") Wrapper<NewsInfo> queryWrapper) ;
+
 }

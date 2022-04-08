@@ -34,4 +34,8 @@ public class CommentDigg {
 
     @TableField(update = "now()")
     private Date updateTime ;
+
+    //被回复者是否已经查看过该通知
+    private Boolean isRead = false ;
+
 }

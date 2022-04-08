@@ -49,4 +49,45 @@ public class ReplyController {
     public ResponseResult deleteById(@PathVariable Long replyId) {
         return replyService.deleteById(replyId) ;
     }
+
+    /**
+     * TODO 查看用户有多少回复未查看
+     */
+    @GetMapping("/reply/getNewRepliesCounts/{userId}")
+    public ResponseResult getNewReplies(@PathVariable Long userId) {
+        return replyService.getNewReplies(userId) ;
+    }
+
+    /**
+     * TODO 获取用户未查看的评论下的回复
+     */
+    @GetMapping("/reply/getNewReplies/{userId}")
+    public ResponseResult getNewRepliesComment(@PathVariable Long userId) {
+        return replyService.getNewRepliesComment(userId) ;
+    }
+
+    /**
+     * TODO 获取用户未查看的点赞信息
+     */
+    @GetMapping("/digg/getUnReadDigg/{userId}")
+    public ResponseResult getDiggs(@PathVariable Long userId) {
+        return replyService.getDiggs(userId) ;
+    }
+
+    /**
+     * TODO 设置该回复为已读状态
+     */
+    @GetMapping("/reply/setMessageIsRead/{replyId}")
+    public ResponseResult setReplyRead(@PathVariable Long replyId) {
+        return replyService.setReplyRead(replyId) ;
+    }
+
+    /**
+     * TODO 设置用户的点赞状态为已读
+     */
+    @GetMapping("/reply/setDiggIsRead/{diggId}/{type}")
+    public ResponseResult setDiggRead(@PathVariable Long diggId , @PathVariable Short type) {
+        return replyService.setDiggRead(diggId ,type) ;
+    }
+
 }

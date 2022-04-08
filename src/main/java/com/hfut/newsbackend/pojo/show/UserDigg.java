@@ -1,6 +1,7 @@
 package com.hfut.newsbackend.pojo.show;
 
 import com.baomidou.mybatisplus.annotation.IdType;
+import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
 import lombok.AllArgsConstructor;
@@ -36,5 +37,6 @@ public class UserDigg {
 
     private Date createTime ;
 
+    @TableField(update = "now()")
     private Date updateTime ;
 }
