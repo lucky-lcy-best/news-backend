@@ -21,10 +21,26 @@ public class NewsController {
     @Autowired
     private NewsServiceImpl newsService ;
 
+    /**
+     * 用户未登录状态下返回的新闻
+     * @param id
+     * @param refresh_count
+     * @param pageSize
+     * @return
+     */
     @GetMapping("/getRecNews/{id}/{refresh_count}/{pageSize}")
     @ApiOperation("返回前端不同分类情况下的新闻 ,identity就是分类")
     public JSONResult getRecNews(@PathVariable Integer id, @PathVariable Integer refresh_count,  @PathVariable Integer pageSize) {
         return JSONResult.ok(newsService.getRecNews(id , refresh_count, pageSize)) ;
+    }
+
+    /**
+     * 用户登录之后根据浏览历史来推荐新闻
+     */
+    @GetMapping("/getRecNewsByHistory/{userId}/{refresh_count}/{pageSize}")
+    @ApiOperation("返回前端不同分类情况下的新闻 ,identity就是分类")
+    public ResponseResult getRecNews(@PathVariable Long userId ,@PathVariable Integer refresh_count,  @PathVariable Integer pageSize) {
+        return newsService.getRecNewsByHistory(userId , refresh_count, pageSize) ;
     }
 
     /**
@@ -118,4 +134,45 @@ public class NewsController {
     public ResponseResult cancelFollowMedia(@PathVariable Long userId , @PathVariable String mediaUid ) {
         return newsService.cancelFollowMedia(userId , mediaUid) ;
     }
+
+    /**
+     * TODO 根据关键字查询
+     */
+    @GetMapping("/news/getByKeyWord/{keyword}")
+    public ResponseResult getNewsByTitle(@PathVariable String keyword) {
+        return newsService.getNewsByTitle(keyword) ;
+    }
+
+    /**
+     * TODO 插入查询记录
+     */
+    @GetMapping("/news/searchHistory/{userId}/{keyWord}")
+    public ResponseResult addSearchHistory(@PathVariable Long userId , @PathVariable String keyWord) {
+        return newsService.addSearchHistory(userId , keyWord) ;
+    }
+
+    /**
+     * TODO 查询历史纪录
+     */
+    @GetMapping("/news/getSearchHistory/{userId}")
+    public ResponseResult addSearchHistory(@PathVariable Long userId) {
+        return newsService.getSearchHistory(userId) ;
+    }
+
+    /**
+     * TODO 清空历史记录
+     */
+    @GetMapping("/news/deleteSearchHistory/{userId}")
+    public ResponseResult deleteSearchHistory(@PathVariable Long userId) {
+        return newsService.deleteSearchHistory(userId) ;
+    }
+
+    /**
+     * TODO 获取用户的新闻媒体关注列表
+     */
+    @GetMapping("/news/getUserFollowAuthor/{userId}")
+    public ResponseResult getUserFollowAuthor(@PathVariable Long userId) {
+        return newsService.getUserFollowAuthor(userId) ;
+    }
+
 }

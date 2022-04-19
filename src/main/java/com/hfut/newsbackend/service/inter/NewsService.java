@@ -39,4 +39,16 @@ public interface NewsService {
     ResponseResult followMedia(Long userId, String mediaUid);
 
     ResponseResult cancelFollowMedia(Long userId, String mediaUid);
+
+    ResponseResult getNewsByTitle(String keyword);
+
+    ResponseResult getUserFollowAuthor(Long userId);
+
+    ResponseResult addSearchHistory(Long userId, String keyWord);
+
+    ResponseResult getSearchHistory(Long userId);
+
+    ResponseResult deleteSearchHistory(Long userId);
+
+    ResponseResult getRecNewsByHistory(Long userId ,Integer refresh_count, Integer pageSize);
 }

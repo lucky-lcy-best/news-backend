@@ -12,6 +12,7 @@ import com.hfut.newsbackend.response.ResponseResult;
 import com.hfut.newsbackend.service.inter.NewsService;
 import com.hfut.newsbackend.utils.DateFormatUtil;
 import com.hfut.newsbackend.utils.RedisCache;
+import io.swagger.models.auth.In;
 import lombok.extern.log4j.Log4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.Authentication;
@@ -27,6 +28,10 @@ import java.util.*;
  */
 @Service
 public class NewsServiceImpl implements NewsService {
+
+    @Autowired
+    private SearchHistoryMapper searchHistoryMapper ;
+
     @Autowired
     private NewsMapper newsMapper ;
 
@@ -52,7 +57,7 @@ public class NewsServiceImpl implements NewsService {
     private UserFollowMapper userFollowMapper ;
 
     /**
-     * 返回多条新闻
+     * 返回多条新闻  推荐新闻 根据用户的浏览历史记录进行推荐
      * @param id
      * @param refresh_count
      * @param pageSize
@@ -87,6 +92,157 @@ public class NewsServiceImpl implements NewsService {
             article.setContent(article.getContent().replace("视频加载中...",""));
         }
         return page.getRecords() ;
+    }
+
+    /**
+     * 根据关键字 从新闻标题中查询相关新闻 不分页
+     * @param keyword
+     * @return
+     */
+    @Override
+    public ResponseResult getNewsByTitle(String keyword) {
+        //模糊查询
+        QueryWrapper<NewsInfo> wrapper = new QueryWrapper<>() ;
+
+        wrapper.like("title" , keyword) ;
+
+        return new ResponseResult(200 , "获取新闻成功" , newsInfoMapper.getByKeyWord(wrapper));
+
+    }
+
+    /**
+     * TODO 获取用户关注列表
+     * @param userId
+     * @return
+     */
+    @Override
+    public ResponseResult getUserFollowAuthor(Long userId) {
+        QueryWrapper<UserFollow> wrapper = new QueryWrapper<>() ;
+        wrapper.eq("user_id" , userId) ;
+        List<UserFollow> userFollows = userFollowMapper.selectList(wrapper) ;
+        List<MediaUser> users = new ArrayList<>() ;
+        for (UserFollow each : userFollows) {
+            //获取media_uid
+            String media_uid = each.getMediaUid();
+            //查询media_user表
+            QueryWrapper<MediaUser> wrapper1 = new QueryWrapper<>() ;
+            wrapper1.eq("creator_uid" , media_uid) ;
+            List<MediaUser> user = mediaUserMapper.selectList(wrapper1) ;
+            users.add(user.get(0)) ;
+        }
+        return new ResponseResult(200 , "获取关注列表成功" , users);
+    }
+
+    /**
+     * TODO 插入搜索历史
+     * @param userId
+     * @param keyWord
+     * @return
+     */
+    @Override
+    public ResponseResult addSearchHistory(Long userId, String keyWord) {
+        SearchHistory searchHistory = new SearchHistory() ;
+        searchHistory.setUserId(userId);
+        searchHistory.setKeyWord(keyWord);
+        if (searchHistoryMapper.insert(searchHistory) != 0) {
+            return new ResponseResult(200 , "插入成功" , true);
+        }
+        return new ResponseResult(200 , "插入失败" , false);
+    }
+
+    /**
+     * TODO 获取用户的历史记录
+     * @param userId
+     * @return
+     */
+    @Override
+    public ResponseResult getSearchHistory(Long userId) {
+        QueryWrapper<SearchHistory> wrapper = new QueryWrapper<>() ;
+        wrapper.eq("user_id" , userId) ;
+        List<SearchHistory> histories = searchHistoryMapper.selectList(wrapper) ;
+        List<String> keyList = new ArrayList<>();
+        for (SearchHistory one : histories) {
+            keyList.add(one.getKeyWord()) ;
+        }
+        return new ResponseResult(200 , "获取成功" , keyList);
+    }
+
+    /**
+     * TODO 清空历史记录
+     * @param userId
+     * @return
+     */
+    @Override
+    public ResponseResult deleteSearchHistory(Long userId) {
+        QueryWrapper<SearchHistory> wrapper = new QueryWrapper<>() ;
+        wrapper.eq("user_id" , userId) ;
+        if (searchHistoryMapper.delete(wrapper) != 0) {
+            return new ResponseResult(200 , "清除成功" , true);
+        }
+        return new ResponseResult(200 , "清除失败" , false);
+    }
+
+    /**
+     * 根据用户浏览记录返回推荐的新闻
+     * @param refresh_count
+     * @param pageSize
+     * @return
+     */
+    @Override
+    public ResponseResult getRecNewsByHistory(Long userId ,Integer refresh_count, Integer pageSize) {
+        //现根据userId查询出用户的历史记录
+        QueryWrapper<UserHistory> wrapper = new QueryWrapper<>() ;
+        wrapper.eq("user_id" , userId) ;
+        List<UserHistory> histories = userHistoryMapper.selectList(wrapper);
+        //遍历历史记录找到最高的几个种类 并统计个数
+        HashMap<String , Integer> map = new HashMap<>() ;
+        for (UserHistory history : histories) {
+            Long newsId = history.getNewsId() ;
+            String identity = newsMapper.selectById(newsId).getIdentity() ;
+            if (map.containsKey(identity)) {
+                map.put(identity , map.get(identity) + 1) ;
+            }else {
+                map.put(identity , 1) ;
+            }
+        }
+        //排序
+        List<Map.Entry<String , Integer>> list = new ArrayList<>(map.entrySet());
+
+        //重写方法 降序排列
+        Collections.sort(list, new Comparator<Map.Entry<String, Integer>>()
+        {
+            @Override
+            public int compare(Map.Entry<String, Integer> o1, Map.Entry<String, Integer> o2) {
+                //按照value值升序
+                return o2.getValue() - o1.getValue();
+                //按照value值降序
+            }
+        });
+        //根据排序好的新闻根据种类进行推荐
+        //开始查询新闻 根据条数查询 每次分页
+        Integer total = histories.size() ;
+        List<NewsInfo> newsInfos = new ArrayList<>() ;
+        for (Map.Entry<String , Integer> c:list) {
+            String identity = c.getKey() ;
+            //根据比例查找新闻  时间降序
+            float count = (float)c.getValue() / (float)total * (float)pageSize;
+            Page<NewsInfo> page = new Page<>(refresh_count,(int)count);
+            QueryWrapper<NewsInfo> wrapper2 = new QueryWrapper<>() ;
+            wrapper2.eq("identity", identity) ;
+            wrapper2.orderByDesc("publish_time") ;
+            newsInfoMapper.getNewsInfo(page , wrapper2) ;
+            //将新闻的时间由时间戳转换成 datatime
+            for (NewsInfo article : page.getRecords()) {
+                article.setPublishTime(DateFormatUtil.timeStamp2Date(article.getPublishTime()));
+                //将视频加载中这类新闻的视频加载时删除
+                article.setContent(article.getContent().replace("视频加载中...",""));
+                //加入列表
+                newsInfos.add(article) ;
+            }
+        }
+        //返回结果
+        return new ResponseResult(200, "推荐成功" , newsInfos) ;
+
     }
 
     /**
@@ -339,7 +495,12 @@ public class NewsServiceImpl implements NewsService {
         wrapper.eq("creator_uid" , uid) ;
         wrapper.orderByDesc("publish_time");
         List<News> news = newsMapper.selectList(wrapper);
-
+        //将新闻的时间由时间戳转换成datatime
+        for (News article : news) {
+            article.setPublishTime(DateFormatUtil.timeStamp2Date(article.getPublishTime()));
+            //将视频加载中这类新闻的视频加载时删除
+            article.setContent(article.getContent().replace("视频加载中...",""));
+        }
         return new ResponseResult(200 , "获取当前作者新闻成功", news );
     }
 
