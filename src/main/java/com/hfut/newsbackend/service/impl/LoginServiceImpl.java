@@ -36,6 +36,11 @@ public class LoginServiceImpl implements LoginService {
     @Autowired
     private UserMapper userMapper ;
 
+    /**
+     * TODO 登录
+     * @param user
+     * @return
+     */
     @Override
     public ResponseResult login(User user) {
         // 通过AuthenticationManager的authenticate方法来进行用户认证 账号和密码
@@ -64,7 +69,7 @@ public class LoginServiceImpl implements LoginService {
     }
 
     /**
-     * 刷新token
+     * TODO 刷新token
      * @return
      */
     @Override
@@ -100,7 +105,7 @@ public class LoginServiceImpl implements LoginService {
     }
 
     /**
-     * 退出
+     * TODO 退出登录
      */
     @Override
     public ResponseResult logout() {
@@ -117,7 +122,7 @@ public class LoginServiceImpl implements LoginService {
     }
 
     /**
-     * 根据authentication来获取当前用户的信息，包括基本信息和权限
+     * TODO 根据authentication来获取当前用户的信息，包括基本信息和权限
      * @return
      */
     @Override
@@ -136,7 +141,7 @@ public class LoginServiceImpl implements LoginService {
     }
 
     /**
-     * 用户注册
+     * TODO 用户注册
      * @param user
      * @return boolean
      */
@@ -163,7 +168,7 @@ public class LoginServiceImpl implements LoginService {
     }
 
     /**
-     * 是否已注册
+     * TODO 是否已注册
      * @param account
      * @return
      */
@@ -179,7 +184,7 @@ public class LoginServiceImpl implements LoginService {
     }
 
     /**
-     * 更新用户信息
+     * TODO 更新用户信息
      * @param user
      * @return
      */

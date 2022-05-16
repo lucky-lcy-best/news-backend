@@ -22,7 +22,7 @@ public class NewsController {
     private NewsServiceImpl newsService ;
 
     /**
-     * 用户未登录状态下返回的新闻
+     * TODO 用户未登录状态下返回的新闻
      * @param id
      * @param refresh_count
      * @param pageSize
@@ -35,7 +35,7 @@ public class NewsController {
     }
 
     /**
-     * 用户登录之后根据浏览历史来推荐新闻
+     * TODO 用户登录之后根据浏览历史来推荐新闻
      */
     @GetMapping("/getRecNewsByHistory/{userId}/{refresh_count}/{pageSize}")
     @ApiOperation("返回前端不同分类情况下的新闻 ,identity就是分类")
@@ -44,7 +44,7 @@ public class NewsController {
     }
 
     /**
-     * 根据id查询新闻信息 注意更新redis中的点赞数和收藏数
+     * TODO 根据id查询新闻信息 注意更新redis中的点赞数和收藏数
      */
     @GetMapping("/news/{id}")
     @ApiOperation("id查新闻")

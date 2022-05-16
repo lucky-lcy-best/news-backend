@@ -57,7 +57,7 @@ public class NewsServiceImpl implements NewsService {
     private UserFollowMapper userFollowMapper ;
 
     /**
-     * 返回多条新闻  推荐新闻 根据用户的浏览历史记录进行推荐
+     * TODO 返回多条新闻  推荐新闻 根据用户的浏览历史记录进行推荐
      * @param id
      * @param refresh_count
      * @param pageSize
@@ -95,7 +95,7 @@ public class NewsServiceImpl implements NewsService {
     }
 
     /**
-     * 根据关键字 从新闻标题中查询相关新闻 不分页
+     * TODO 根据关键字 从新闻标题中查询相关新闻 不分页
      * @param keyword
      * @return
      */
